@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: myapp
-        image: my-app
+        image: bartodes/myapp-for-prometheus:0.1.0
         imagePullPolicy: IfNotPresent
         ports:
         - name: devices

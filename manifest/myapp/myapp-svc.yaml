@@ -2,16 +2,19 @@ apiVersion: v1
 kind: Service
 metadata:
   name: myapp-devices-svc
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-resource-group: MC_ansible-rg_adapted-sponge-k8s_eastus2
+    service.beta.kubernetes.io/azure-pip-name: 4139c55e-e7c3-4fcd-b8fd-b2ec7a1aa0d1
 spec:
   selector:
     app: myapp
-  type: NodePort
+  type: LoadBalancer
   ports:
   - name: devices
     protocol: TCP
     port: 8080
     targetPort: 8080
-    nodePort: 31000
+    # nodePort: 31000
 ---
 apiVersion: v1
 kind: Service
