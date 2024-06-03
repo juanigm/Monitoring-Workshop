@@ -3,13 +3,15 @@ kind: Service
 metadata:
   name: grafana
   namespace: monitoring
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-resource-group: MC_ansible-rg_adapted-sponge-k8s_eastus2
+    service.beta.kubernetes.io/azure-pip-name: 4139c55e-e7c3-4fcd-b8fd-b2ec7a1aa0d1
 spec:
-  type: NodePort
   ports:
     - port: 3000
       protocol: TCP
       targetPort: http-grafana
-      nodePort: 30000
   selector:
     app: grafana
   sessionAffinity: None
+  type: LoadBalancer
