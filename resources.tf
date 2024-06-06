@@ -16,7 +16,7 @@ resource "azurerm_network_security_rule" "grafana_rule" {
   source_address_prefix       = "*"
   destination_address_prefix  = data.azurerm_public_ip.aks_pip_defult.ip_address
   resource_group_name         = module.aks.node-rg
-  network_security_group_name = trimspace(file("${path.root}/nsg_name.txt"))
+  network_security_group_name = file("${path.root}/nsg_name.txt")
 
   depends_on = [ data.azurerm_public_ip.aks_pip_defult ]
 }
@@ -32,7 +32,7 @@ resource "azurerm_network_security_rule" "prometheus_rule" {
   source_address_prefix       = "*"
   destination_address_prefix  = data.azurerm_public_ip.aks_pip_defult.ip_address
   resource_group_name         = module.aks.node-rg
-  network_security_group_name = trimspace(file("${path.root}/nsg_name.txt"))
+  network_security_group_name = file("${path.root}/nsg_name.txt")
 
   depends_on = [ data.azurerm_public_ip.aks_pip_defult ]
 }
@@ -48,7 +48,7 @@ resource "azurerm_network_security_rule" "myapp_rule" {
   source_address_prefix       = "*"
   destination_address_prefix  = data.azurerm_public_ip.aks_pip_defult.ip_address
   resource_group_name         = module.aks.node-rg
-  network_security_group_name = trimspace(file("${path.root}/nsg_name.txt"))
+  network_security_group_name = file("${path.root}/nsg_name.txt")
 
   depends_on = [ data.azurerm_public_ip.aks_pip_defult ]
 }
