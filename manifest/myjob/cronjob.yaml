@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: push-metrics
+spec:
+  schedule: "* * * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 10
+      template:
+        spec:
+          containers:
+          - name: push-metrics
+            image: myjob:0.1.0
+            imagePullPolicy: IfNotPresent
+            command: ["python3"]
+            args: 
+            - -u
+            - /app/main.py
+            env:
+            - name: url
+              valueFrom:
+                configMapKeyRef:
+                  name: job-config
+                  key: pushgateway_url
+            - name: port
+              valueFrom:
+                configMapKeyRef:
+                  name: job-config
+                  key: pushgateway_port
+          restartPolicy: Never
