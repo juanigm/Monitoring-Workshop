@@ -23,6 +23,11 @@ data:
       evaluation_interval: 5s
 
     alerting:
+      alertmanagers:
+      - scheme: http
+        static_configs:
+        - targets:
+          - "alertmanager.monitoring.svc:9093"
 
     rule_files:
 
@@ -30,6 +35,9 @@ data:
     - job_name: myapp
       static_configs:
       - targets: ["myapp-metrics-svc.default:8081"]
+    - job_name: pushgateway
+      static_configs:
+      - targets: ["pushgateway:9091"]
 
 # global:
   #   scrape_interval: 5s
