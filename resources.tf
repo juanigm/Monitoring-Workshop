@@ -1,8 +1,37 @@
+resource "null_resource" "nsg-name" {
+
+  triggers = {
+    always_run = timestamp()
+  }
+
+  provisioner "local-exec" {
+    command = "az network public-ip list -g ${module.aks.node-rg} --query '[].{name:name}'[0] | jq -r .name | tr -d '\n' > pip_name.txt"
+  }
+
+  provisioner "local-exec" {
+    command = "az network nsg list -g ${module.aks.node-rg} --query '[].{name:name}'[0] | jq -r .name | tr -d '\n' > nsg_name.txt"
+  }
+
+}
+
+data "local_file" "pip" {
+  filename = "${path.root}/pip_name.txt"
+
+  depends_on = [ null_resource.nsg-name ]
+}
+
+data "local_file" "nsg" {
+  filename = "${path.root}/nsg_name.txt"
+
+  depends_on = [ null_resource.nsg-name ]
+}
+
+
 data "azurerm_public_ip" "aks_pip_defult" {
-    name                = trimspace(file("${path.root}/pip_name.txt"))
+    name                = data.local_file.pip.content
     resource_group_name = module.aks.node-rg
 
-    depends_on = [ module.aks ]
+    depends_on = [ null_resource.nsg-name]
 }
 
 resource "azurerm_network_security_rule" "grafana_rule" {
@@ -16,7 +45,7 @@ resource "azurerm_network_security_rule" "grafana_rule" {
   source_address_prefix       = "*"
   destination_address_prefix  = data.azurerm_public_ip.aks_pip_defult.ip_address
   resource_group_name         = module.aks.node-rg
-  network_security_group_name = file("${path.root}/nsg_name.txt")
+  network_security_group_name = data.local_file.nsg.content
 
   depends_on = [ data.azurerm_public_ip.aks_pip_defult ]
 }
@@ -32,7 +61,7 @@ resource "azurerm_network_security_rule" "prometheus_rule" {
   source_address_prefix       = "*"
   destination_address_prefix  = data.azurerm_public_ip.aks_pip_defult.ip_address
   resource_group_name         = module.aks.node-rg
-  network_security_group_name = file("${path.root}/nsg_name.txt")
+  network_security_group_name = data.local_file.nsg.content
 
   depends_on = [ data.azurerm_public_ip.aks_pip_defult ]
 }
@@ -48,7 +77,7 @@ resource "azurerm_network_security_rule" "myapp_rule" {
   source_address_prefix       = "*"
   destination_address_prefix  = data.azurerm_public_ip.aks_pip_defult.ip_address
   resource_group_name         = module.aks.node-rg
-  network_security_group_name = file("${path.root}/nsg_name.txt")
+  network_security_group_name = data.local_file.nsg.content
 
   depends_on = [ data.azurerm_public_ip.aks_pip_defult ]
 }
@@ -70,7 +99,7 @@ resource "null_resource" "get-nsg-name" {
   }
 
   provisioner "local-exec" {
-    command = "for yaml in $YAMLS; do sed -i 's;service.beta.kubernetes.io/azure-pip-name: .*;service.beta.kubernetes.io/azure-pip-name: ${module.aks.pip_name};g' manifest/$yaml/$yaml-service.yaml; done"
+    command = "for yaml in $YAMLS; do sed -i 's;service.beta.kubernetes.io/azure-pip-name: .*;service.beta.kubernetes.io/azure-pip-name: ${data.local_file.pip.content};g' manifest/$yaml/$yaml-service.yaml; done"
     environment = { YAMLS = join(" ", var.yaml-files) }
   }
 }
