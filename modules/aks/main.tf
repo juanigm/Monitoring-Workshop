@@ -26,3 +26,22 @@ resource "local_file" "kubeconfig" {
   filename     = "kubeconfig"
   content      = azurerm_kubernetes_cluster.aks.kube_config_raw
 }
+
+
+resource "null_resource" "get-nsg-name" {
+
+  triggers = {
+    always_run = timestamp()
+  }
+
+  provisioner "local-exec" {
+    command = "az network public-ip list -g ${azurerm_kubernetes_cluster.aks.node_resource_group} --query '[].{name:name}'[0] | jq -r .name | tr -d '\n' > pip_name.txt"
+  }
+
+  provisioner "local-exec" {
+    command = "az network nsg list -g ${azurerm_kubernetes_cluster.aks.node_resource_group} --query '[].{name:name}'[0] | jq -r .name | tr -d '\n' > nsg_name.txt"
+  }
+
+  depends_on = [ azurerm_kubernetes_cluster.aks ]
+}
+
