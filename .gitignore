@@ -38,3 +38,6 @@ terraform.rc
 
 kubeconfig
 kubectl.sha256
+
+nsg_name.txt
+pip_name.txt
