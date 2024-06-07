@@ -4,7 +4,10 @@ metadata:
   name: alertmanager-config
   namespace: monitoring
 data:
-  config.yml: |-
+  alertmanager.yml: |-
+    global:
+      resolve_timeout: 5m
+    
     route:
       group_by: ['alertname']
       group_interval: 30s

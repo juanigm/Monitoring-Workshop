@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: alertmanager
   namespace: monitoring
+  labels:
+    app: alertmanager
 spec:
   replicas: 1
   selector:
@@ -10,32 +12,26 @@ spec:
       app: alertmanager
   template:
     metadata:
-      name: alertmanager
       labels:
         app: alertmanager
     spec:
       containers:
       - name: alertmanager
         image: prom/alertmanager:latest
+        imagePullPolicy: IfNotPresent
         args:
-          - "--config.file=/etc/alertmanager/config.yml"
+          - "--config.file=/etc/alertmanager/alertmanager.yml"
           - "--storage.path=/alertmanager"
         ports:
-        - name: alertmanager
-          containerPort: 9093
+        - containerPort: 9093
         volumeMounts:
         - name: config-volume
           mountPath: /etc/alertmanager
-        - name: templates-volume
-          mountPath: /etc/alertmanager-templates
-        - name: alertmanager
+        - name: storage-volume
           mountPath: /alertmanager
       volumes:
       - name: config-volume
         configMap:
           name: alertmanager-config
-      - name: templates-volume
-        configMap:
-          name: alertmanager-templates
-      - name: alertmanager
+      - name: storage-volume
         emptyDir: {}
