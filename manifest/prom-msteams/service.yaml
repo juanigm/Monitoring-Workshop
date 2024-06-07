@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: prom-msteams
+  namespace: monitoring
+spec:
+  selector:
+    app: prom-msteams
+  ports:
+    - port: 2000
+      targetPort: 2000

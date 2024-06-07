@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prom-msteams
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prom-msteams
+  template:
+    metadata:
+      labels:
+        app: prom-msteams
+    spec:
+      containers:
+      - name: prom-msteams
+        image: quay.io/prometheusmsteams/prometheus-msteams
+        ports:
+        - containerPort: 2000
+        env:
+        - name: TEAMS_INCOMING_WEBHOOK_URL
+          valueFrom:
+            configMapKeyRef:
+              name: prom-msteams-conf
+              key: webhook_ms
+        - name: TEAMS_REQUEST_URI
+          valueFrom:
+            configMapKeyRef:
+              name: prom-msteams-conf
+              key: alertmanager_url
