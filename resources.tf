@@ -84,7 +84,7 @@ resource "azurerm_network_security_rule" "myapp_rule" {
 
 variable "yaml-files" {
   type = list(string)
-  default = [ "grafana", "prometheus", "myapp" ]
+  default = [ "grafana", "prometheus", "myapp", "pushgateway" ]
 }
 
 resource "null_resource" "get-nsg-name" {
@@ -94,12 +94,12 @@ resource "null_resource" "get-nsg-name" {
   }
 
   provisioner "local-exec" {
-    command = "for yaml in $YAMLS; do sed -i 's;service.beta.kubernetes.io/azure-load-balancer-resource-group: .*;service.beta.kubernetes.io/azure-load-balancer-resource-group: ${module.aks.node-rg};g' manifest/$yaml/$yaml-service.yaml; done"
+    command = "for yaml in $YAMLS; do sed -i 's;service.beta.kubernetes.io/azure-load-balancer-resource-group: .*;service.beta.kubernetes.io/azure-load-balancer-resource-group: ${module.aks.node-rg};g' manifest/$yaml/service.yaml; done"
     environment = { YAMLS = join(" ", var.yaml-files) }
   }
 
   provisioner "local-exec" {
-    command = "for yaml in $YAMLS; do sed -i 's;service.beta.kubernetes.io/azure-pip-name: .*;service.beta.kubernetes.io/azure-pip-name: ${data.local_file.pip.content};g' manifest/$yaml/$yaml-service.yaml; done"
+    command = "for yaml in $YAMLS; do sed -i 's;service.beta.kubernetes.io/azure-pip-name: .*;service.beta.kubernetes.io/azure-pip-name: ${data.local_file.pip.content};g' manifest/$yaml/service.yaml; done"
     environment = { YAMLS = join(" ", var.yaml-files) }
   }
 }
