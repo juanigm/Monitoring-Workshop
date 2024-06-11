@@ -3,6 +3,10 @@ variable "name" {
   type = string
 }
 
+variable "subnet_id" {
+  type = string
+}
+
 variable "location" {
   type = string
   default = "eastus2"
@@ -39,4 +43,11 @@ variable "default_node_pool_vm_size" {
 variable "default_node_pool_os_disk_size_gb" {
   type = number
   default = 30  
+}
+
+variable "services" {
+
+  type = list(number)
+
+  default = [ 3000, 8080, 9090, 9091, 9093 ]
 }
