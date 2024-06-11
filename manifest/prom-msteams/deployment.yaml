@@ -21,11 +21,8 @@ spec:
         env:
         - name: TEAMS_INCOMING_WEBHOOK_URL
           valueFrom:
-            configMapKeyRef:
-              name: prom-msteams-conf
-              key: webhook_ms
+            secretKeyRef:
+              name: webhook-secret
+              key: url
         - name: TEAMS_REQUEST_URI
-          valueFrom:
-            configMapKeyRef:
-              name: prom-msteams-conf
-              key: alertmanager_url
+          value: alertmanager
