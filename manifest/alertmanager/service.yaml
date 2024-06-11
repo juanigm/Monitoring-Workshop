@@ -4,8 +4,8 @@ metadata:
   name: alertmanager
   namespace: monitoring
   annotations:
-    service.beta.kubernetes.io/azure-load-balancer-resource-group: MC_ansible-rg_certain-seasnail-k8s_eastus2
-    service.beta.kubernetes.io/azure-pip-name: 1c495593-a513-4451-be3d-1be813f8a0d3
+    service.beta.kubernetes.io/azure-load-balancer-resource-group: MC_ansible-rg_fit-cattle-k8s_eastus2
+    service.beta.kubernetes.io/azure-pip-name: b6b3a5a4-0ed4-45ab-aae3-6433f652df8b
     prometheus.io/scrape: "true"
     prometheus.io/port: "9093"
 spec:

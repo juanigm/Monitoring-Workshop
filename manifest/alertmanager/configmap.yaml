@@ -19,4 +19,4 @@ data:
     - name: 'prometheus-msteams'
       webhook_configs: 
       - send_resolved: true
-        url: 'prom-msteams:2000/alertmanager'
+        url: 'http://prom-msteams:2000/alertmanager'

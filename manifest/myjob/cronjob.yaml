@@ -12,7 +12,7 @@ spec:
         spec:
           containers:
           - name: push-metrics
-            image: myjob:0.1.0
+            image: bartodes/my-python-job:0.1.0
             imagePullPolicy: IfNotPresent
             command: ["python3"]
             args: 

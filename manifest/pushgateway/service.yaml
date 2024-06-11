@@ -3,10 +3,13 @@ kind: Service
 metadata:
   name: pushgateway
   namespace: monitoring
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-resource-group: MC_ansible-rg_fit-cattle-k8s_eastus2
+    service.beta.kubernetes.io/azure-pip-name: b6b3a5a4-0ed4-45ab-aae3-6433f652df8b
 spec:
   selector:
     app: pushgateway
-  type: NodePort
+  type: LoadBalancer
   ports:
     - port: 9091
       targetPort: 9091

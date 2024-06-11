@@ -3,8 +3,8 @@ kind: Service
 metadata:
   name: myapp-devices-svc
   annotations:
-    service.beta.kubernetes.io/azure-load-balancer-resource-group: MC_ansible-rg_moving-lemur-k8s_eastus2
-    service.beta.kubernetes.io/azure-pip-name: 341c32a8-888d-4ba9-94f4-401589e5dd1c
+    service.beta.kubernetes.io/azure-load-balancer-resource-group: MC_ansible-rg_fit-cattle-k8s_eastus2
+    service.beta.kubernetes.io/azure-pip-name: b6b3a5a4-0ed4-45ab-aae3-6433f652df8b
 spec:
   selector:
     app: myapp
