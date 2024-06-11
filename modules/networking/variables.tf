@@ -12,9 +12,9 @@ variable "rg-name" {
   type = string
 }
 
-variable "sg-name" {
-  type = string
-}
+# variable "sg-name" {
+#   type = string
+# }
 
 variable "CIDR" {
   type = list(string)
