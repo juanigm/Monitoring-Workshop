@@ -8,9 +8,9 @@ resource "null_resource" "nsg-name" {
     command = "az network public-ip list -g ${module.aks.node-rg} --query '[].{name:name}'[0] | jq -r .name | tr -d '\n' > pip_name.txt"
   }
 
-  provisioner "local-exec" {
-    command = "az network nsg list -g ${module.aks.node-rg} --query '[].{name:name}'[0] | jq -r .name | tr -d '\n' > nsg_name.txt"
-  }
+  # provisioner "local-exec" {
+  #   command = "az network nsg list -g ${module.aks.node-rg} --query '[].{name:name}'[0] | jq -r .name | tr -d '\n' > nsg_name.txt"
+  # }
 
 }
 
@@ -20,11 +20,11 @@ data "local_file" "pip" {
   depends_on = [ null_resource.nsg-name ]
 }
 
-data "local_file" "nsg" {
-  filename = "${path.root}/nsg_name.txt"
+# data "local_file" "nsg" {
+#   filename = "${path.root}/nsg_name.txt"
 
-  depends_on = [ null_resource.nsg-name ]
-}
+#   depends_on = [ null_resource.nsg-name ]
+# }
 
 
 data "azurerm_public_ip" "aks_pip_defult" {
@@ -34,58 +34,43 @@ data "azurerm_public_ip" "aks_pip_defult" {
     depends_on = [ null_resource.nsg-name]
 }
 
+resource "azurerm_network_security_group" "aks_nsg" {
+  name                = "aks-nsg"
+  location            = module.aks.location
+  resource_group_name = module.aks.node-rg  
+
+  tags = {
+    environment = "Workshop"
+  }
+}
+
 resource "azurerm_network_security_rule" "grafana_rule" {
-  name                        = "grafana"
-  priority                    = 501
+
+  for_each = {
+    for index, service in var.services:
+    service.name => service
+  }
+
+  name                        = each.value.name
+  priority                    = each.value.priority
   direction                   = "Inbound"
   access                      = "Allow"
   protocol                    = "Tcp"
   source_port_range           = "*"
-  destination_port_range      = "3000"
+  destination_port_range      = each.value.port
   source_address_prefix       = "*"
   destination_address_prefix  = data.azurerm_public_ip.aks_pip_defult.ip_address
   resource_group_name         = module.aks.node-rg
-  network_security_group_name = data.local_file.nsg.content
+  network_security_group_name = azurerm_network_security_group.aks_nsg.name
 
   depends_on = [ data.azurerm_public_ip.aks_pip_defult ]
 }
 
-resource "azurerm_network_security_rule" "prometheus_rule" {
-  name                        = "prometheus"
-  priority                    = 502
-  direction                   = "Inbound"
-  access                      = "Allow"
-  protocol                    = "Tcp"
-  source_port_range           = "*"
-  destination_port_range      = "9090"
-  source_address_prefix       = "*"
-  destination_address_prefix  = data.azurerm_public_ip.aks_pip_defult.ip_address
-  resource_group_name         = module.aks.node-rg
-  network_security_group_name = data.local_file.nsg.content
-
-  depends_on = [ data.azurerm_public_ip.aks_pip_defult ]
+resource "azurerm_subnet_network_security_group_association" "example" {
+  subnet_id                 = tolist(module.vnet.subnet)[0].id
+  network_security_group_id = azurerm_network_security_group.aks_nsg.id
 }
 
-resource "azurerm_network_security_rule" "myapp_rule" {
-  name                        = "myapp"
-  priority                    = 503
-  direction                   = "Inbound"
-  access                      = "Allow"
-  protocol                    = "Tcp"
-  source_port_range           = "*"
-  destination_port_range      = "8080"
-  source_address_prefix       = "*"
-  destination_address_prefix  = data.azurerm_public_ip.aks_pip_defult.ip_address
-  resource_group_name         = module.aks.node-rg
-  network_security_group_name = data.local_file.nsg.content
-
-  depends_on = [ data.azurerm_public_ip.aks_pip_defult ]
-}
-
-variable "yaml-files" {
-  type = list(string)
-  default = [ "grafana", "prometheus", "myapp", "pushgateway" ]
-}
 
 resource "null_resource" "get-nsg-name" {
 
