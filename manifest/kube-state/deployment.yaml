@@ -46,4 +46,4 @@ spec:
           runAsUser: 65534
       nodeSelector:
         kubernetes.io/os: linux
-      serviceAccountName: kube-state-metrics
+      serviceAccountName: kube-state
