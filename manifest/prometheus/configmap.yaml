@@ -156,6 +156,6 @@ data:
         action: replace
         target_label: kubernetes_name
     
-    - job_name: 'kube-state-metrics'
+    - job_name: 'kube-state'
       static_configs:
-        - targets: ['kube-state.svc.cluster.local:8080']
+        - targets: ['kube-state:8080']
