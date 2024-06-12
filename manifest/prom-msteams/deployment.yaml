@@ -21,7 +21,7 @@ spec:
         env:
         - name: TEAMS_INCOMING_WEBHOOK_URL
           valueFrom:
-            secretKeyRef:
+            secretKeyRef: # Using secret, but not added to index since it is ignored in de .gitignore file
               name: webhook-secret
               key: url
         - name: TEAMS_REQUEST_URI
