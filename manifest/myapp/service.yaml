@@ -1,10 +1,8 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: myapp-devices-svc
-  annotations:
-    service.beta.kubernetes.io/azure-load-balancer-resource-group: MC_ansible-rg_fit-cattle-k8s_eastus2
-    service.beta.kubernetes.io/azure-pip-name: b6b3a5a4-0ed4-45ab-aae3-6433f652df8b
+  name: myapp-svc
+  # Using annotations from kustomization.yaml file!
 spec:
   selector:
     app: myapp
@@ -14,17 +12,6 @@ spec:
     protocol: TCP
     port: 8080
     targetPort: 8080
-    # nodePort: 31000
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: myapp-metrics-svc
-spec:
-  selector:
-    app: myapp
-  type: ClusterIP
-  ports:
   - name: metrics
     protocol: TCP
     port: 8081
