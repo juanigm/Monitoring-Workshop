@@ -4,10 +4,9 @@ metadata:
   name: alertmanager
   namespace: monitoring
   annotations:
-    service.beta.kubernetes.io/azure-load-balancer-resource-group: MC_ansible-rg_fit-cattle-k8s_eastus2
-    service.beta.kubernetes.io/azure-pip-name: b6b3a5a4-0ed4-45ab-aae3-6433f652df8b
     prometheus.io/scrape: "true"
     prometheus.io/port: "9093"
+    # Using annotations from kustomization.yaml file!
 spec:
   selector: 
     app: alertmanager
@@ -16,22 +15,3 @@ spec:
     - port: 9093
       targetPort: 9093
       nodePort: 31000
-
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   name: alertmanager
-#   namespace: monitoring
-#   labels:
-#     kubernetes.io/cluster-service: "true"
-#     addonmanager.kubernetes.io/mode: "Reconcile"
-#     kubernetes.io/name: "Alertmanager"
-# spec:
-#   selector:
-#     k8s-app: alertmanager 
-#   type: ClusterIP
-#   ports:
-#     - name: http
-#       port: 9093
-#       protocol: TCP
-#       targetPort: 9093
