@@ -78,13 +78,31 @@ resource "null_resource" "get-nsg-name" {
     always_run = timestamp()
   }
 
-  provisioner "local-exec" {
-    command = "for yaml in $YAMLS; do sed -i 's;service.beta.kubernetes.io/azure-load-balancer-resource-group: .*;service.beta.kubernetes.io/azure-load-balancer-resource-group: ${module.aks.node-rg};g' manifest/$yaml/service.yaml; done"
-    environment = { YAMLS = join(" ", var.yaml-files) }
-  }
+  # provisioner "local-exec" {
+  #   command = "for yaml in $YAMLS; do sed -i 's;service.beta.kubernetes.io/azure-load-balancer-resource-group: .*;service.beta.kubernetes.io/azure-load-balancer-resource-group: ${module.aks.node-rg};g' manifest/$yaml/service.yaml; done"
+  #   environment = { YAMLS = join(" ", var.yaml-files) }
+  # }
+
+  # provisioner "local-exec" {
+  #   command = "for yaml in $YAMLS; do sed -i 's;service.beta.kubernetes.io/azure-pip-name: .*;service.beta.kubernetes.io/azure-pip-name: ${data.local_file.pip.content};g' manifest/$yaml/service.yaml; done"
+  #   environment = { YAMLS = join(" ", var.yaml-files) }
+  # }
 
   provisioner "local-exec" {
-    command = "for yaml in $YAMLS; do sed -i 's;service.beta.kubernetes.io/azure-pip-name: .*;service.beta.kubernetes.io/azure-pip-name: ${data.local_file.pip.content};g' manifest/$yaml/service.yaml; done"
-    environment = { YAMLS = join(" ", var.yaml-files) }
+    command = "cat $KUSTOM > manifest/kustomization.yaml"
+    environment = { 
+      KUSTOM = <<EOF
+      resources:
+      - prometheus/service.yaml
+      - pushgateway/service.yaml
+      - myapp/service.yaml
+      - grafana/service.yaml
+      - alertmanager/service.yaml
+
+      commonAnnotations:
+        service.beta.kubernetes.io/azure-load-balancer-resource-group: ${module.aks.node-rg}
+        service.beta.kubernetes.io/azure-pip-name: ${data.local_file.pip.content}
+      EOF
+    }
   }
 }

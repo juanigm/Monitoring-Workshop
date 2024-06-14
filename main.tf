@@ -25,7 +25,7 @@ module "vnet" {
 }
 
 module "aks" {
-  source = "./modules/AKS"
+  source = "./modules/aks"
 
   name = "${random_pet.random_kubernetes_cluster_name.id}-k8s"
   location = module.rg.location
