@@ -89,20 +89,20 @@ resource "null_resource" "get-nsg-name" {
   # }
 
   provisioner "local-exec" {
-    command = "cat $KUSTOM > manifest/kustomization.yaml"
-    environment = { 
-      KUSTOM = <<EOF
-      resources:
+    # command = "echo $KUSTOM > manifest/kustomization.yaml"
+    command = <<-EOT
+    cat > manifest/kustomization.yaml <<EOF
+    resources:
       - prometheus/service.yaml
       - pushgateway/service.yaml
       - myapp/service.yaml
       - grafana/service.yaml
       - alertmanager/service.yaml
 
-      commonAnnotations:
-        service.beta.kubernetes.io/azure-load-balancer-resource-group: ${module.aks.node-rg}
-        service.beta.kubernetes.io/azure-pip-name: ${data.local_file.pip.content}
-      EOF
-    }
+    commonAnnotations:
+      service.beta.kubernetes.io/azure-load-balancer-resource-group: ${module.aks.node-rg}
+      service.beta.kubernetes.io/azure-pip-name: ${data.local_file.pip.content}
+    EOF
+    EOT
   }
 }
