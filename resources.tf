@@ -1,37 +1,10 @@
-resource "null_resource" "nsg-name" {
-
-  triggers = {
-    always_run = timestamp()
-  }
-
-  provisioner "local-exec" {
-    command = "az network public-ip list -g ${module.aks.node-rg} --query '[].{name:name}'[0] | jq -r .name | tr -d '\n' > pip_name.txt"
-  }
-
-  # provisioner "local-exec" {
-  #   command = "az network nsg list -g ${module.aks.node-rg} --query '[].{name:name}'[0] | jq -r .name | tr -d '\n' > nsg_name.txt"
-  # }
-
-}
-
-data "local_file" "pip" {
-  filename = "${path.root}/pip_name.txt"
-
-  depends_on = [ null_resource.nsg-name ]
-}
-
-# data "local_file" "nsg" {
-#   filename = "${path.root}/nsg_name.txt"
-
-#   depends_on = [ null_resource.nsg-name ]
-# }
-
-
 data "azurerm_public_ip" "aks_pip_defult" {
-    name                = data.local_file.pip.content
-    resource_group_name = module.aks.node-rg
+  name                = data.external.public_ip_name.result["name"]
+  resource_group_name = module.aks.node-rg
+}
 
-    depends_on = [ null_resource.nsg-name]
+data "external" "public_ip_name" {
+  program = ["bash", "${path.module}/public-ip-name.sh", "${module.aks.node-rg}"]
 }
 
 resource "azurerm_network_security_group" "aks_nsg" {
@@ -66,7 +39,7 @@ resource "azurerm_network_security_rule" "grafana_rule" {
   depends_on = [ data.azurerm_public_ip.aks_pip_defult ]
 }
 
-resource "azurerm_subnet_network_security_group_association" "example" {
+resource "azurerm_subnet_network_security_group_association" "aks_nsg_assoc" {
   subnet_id                 = tolist(module.vnet.subnet)[0].id
   network_security_group_id = azurerm_network_security_group.aks_nsg.id
 }
@@ -78,18 +51,7 @@ resource "null_resource" "get-nsg-name" {
     always_run = timestamp()
   }
 
-  # provisioner "local-exec" {
-  #   command = "for yaml in $YAMLS; do sed -i 's;service.beta.kubernetes.io/azure-load-balancer-resource-group: .*;service.beta.kubernetes.io/azure-load-balancer-resource-group: ${module.aks.node-rg};g' manifest/$yaml/service.yaml; done"
-  #   environment = { YAMLS = join(" ", var.yaml-files) }
-  # }
-
-  # provisioner "local-exec" {
-  #   command = "for yaml in $YAMLS; do sed -i 's;service.beta.kubernetes.io/azure-pip-name: .*;service.beta.kubernetes.io/azure-pip-name: ${data.local_file.pip.content};g' manifest/$yaml/service.yaml; done"
-  #   environment = { YAMLS = join(" ", var.yaml-files) }
-  # }
-
   provisioner "local-exec" {
-    # command = "echo $KUSTOM > manifest/kustomization.yaml"
     command = <<-EOT
     cat > manifest/kustomization.yaml <<EOF
     resources:
@@ -101,7 +63,7 @@ resource "null_resource" "get-nsg-name" {
 
     commonAnnotations:
       service.beta.kubernetes.io/azure-load-balancer-resource-group: ${module.aks.node-rg}
-      service.beta.kubernetes.io/azure-pip-name: ${data.local_file.pip.content}
+      service.beta.kubernetes.io/azure-pip-name: ${data.external.public_ip_name.result["name"]}
     EOF
     EOT
   }
