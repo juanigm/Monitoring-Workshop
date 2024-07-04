@@ -32,8 +32,3 @@ variable "services" {
     priority = 504
   }]
 }
-
-variable "yaml-files" {
-  type = list(string)
-  default = [ "grafana", "prometheus", "myapp", "pushgateway", "alertmanager" ]
-}
