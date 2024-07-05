@@ -63,3 +63,12 @@ resource "azurerm_network_security_rule" "deployment_rules" {
   depends_on = [data.azurerm_public_ip.aks_pip_defult]
 }
 
+resource "null_resource" "checkov" {
+  provisioner "local-exec" {
+      command = "checkov --directory . -o cli -o github_failed_only --output-file-path checkov --framework terraform --quiet --compact"
+    }
+
+  triggers = {
+    always_run = timestamp()
+  }
+}
