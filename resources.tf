@@ -1,51 +1,13 @@
+data "external" "public_ip_name" {
+  program = ["bash", "${path.module}/public-ip-name.sh", "${module.aks.node-rg}"]
+}
+
 data "azurerm_public_ip" "aks_pip_defult" {
   name                = data.external.public_ip_name.result["name"]
   resource_group_name = module.aks.node-rg
 }
 
-data "external" "public_ip_name" {
-  program = ["bash", "${path.module}/public-ip-name.sh", "${module.aks.node-rg}"]
-}
-
-resource "azurerm_network_security_group" "aks_nsg" {
-  name                = "aks-nsg"
-  location            = module.aks.location
-  resource_group_name = module.aks.node-rg  
-
-  tags = {
-    environment = "Workshop"
-  }
-}
-
-resource "azurerm_network_security_rule" "grafana_rule" {
-
-  for_each = {
-    for index, service in var.services:
-    service.name => service
-  }
-
-  name                        = each.value.name
-  priority                    = each.value.priority
-  direction                   = "Inbound"
-  access                      = "Allow"
-  protocol                    = "Tcp"
-  source_port_range           = "*"
-  destination_port_range      = each.value.port
-  source_address_prefix       = "*"
-  destination_address_prefix  = data.azurerm_public_ip.aks_pip_defult.ip_address
-  resource_group_name         = module.aks.node-rg
-  network_security_group_name = azurerm_network_security_group.aks_nsg.name
-
-  depends_on = [ data.azurerm_public_ip.aks_pip_defult ]
-}
-
-resource "azurerm_subnet_network_security_group_association" "aks_nsg_assoc" {
-  subnet_id                 = tolist(module.vnet.subnet)[0].id
-  network_security_group_id = azurerm_network_security_group.aks_nsg.id
-}
-
-
-resource "null_resource" "get-nsg-name" {
+resource "null_resource" "generate_kustomize" {
 
   triggers = {
     always_run = timestamp()
@@ -68,3 +30,36 @@ resource "null_resource" "get-nsg-name" {
     EOT
   }
 }
+
+resource "azurerm_network_security_group" "aks_nsg" {
+  name                = "aks-nsg"
+  location            = module.aks.location
+  resource_group_name = module.aks.node-rg  
+
+  tags = {
+    environment = "Workshop"
+  }
+}
+
+resource "azurerm_network_security_rule" "deployment_rules" {
+
+  for_each = {
+    for index, service in var.services:
+    service.name => service
+  }
+
+  name                        = each.value.name
+  priority                    = each.value.priority
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  source_address_prefix       = "*"
+  destination_port_range      = each.value.port
+  destination_address_prefix  = data.azurerm_public_ip.aks_pip_defult.ip_address
+  resource_group_name         = module.aks.node-rg
+  network_security_group_name = azurerm_network_security_group.aks_nsg.name
+
+  depends_on = [data.azurerm_public_ip.aks_pip_defult]
+}
+
