@@ -32,3 +32,8 @@ variable "services" {
     priority = 504
   }]
 }
+
+variable "cluster_subnet_name" {
+  type = string
+  default = "aks-subnet"
+}
