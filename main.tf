@@ -1,36 +1,41 @@
-module "rg" {
-  source = "./modules/ResourceGroups"
+resource "azurerm_resource_group" "aks_rg" {
+  name     = "aks-rg"
+  location = "eastus2"
 
-  name = "ansible-rg"
+  tags = {
+    environment = "Test"
+    Terraform   = true
+  }
 }
 
 module "vnet" {
-  source = "./modules/networking"
+  source  = "Azure/vnet/azurerm"
+  version = "4.1.0"
+  
+  vnet_name     = "aks-vnet"
+  address_space = ["10.224.0.0/12"]
+  
+  resource_group_name = azurerm_resource_group.aks_rg.name
+  vnet_location       = azurerm_resource_group.aks_rg.location
+  use_for_each        = false
 
-  vnet-name = "aks-vent"
+  subnet_names    = [var.cluster_subnet_name]
+  subnet_prefixes = ["10.224.0.0/16"]
 
-  rg-name = module.rg.name
-
-  # sg-name = "aks-vnet-sg"
-
-  CIDR = ["10.224.0.0/12"]
-
-  subnets = {
-    subnet1 = {
-      name           = "aks-subnet"
-      address_prefix = "10.224.0.0/16"
-    }
+  nsg_ids = {
+    (var.cluster_subnet_name) = azurerm_network_security_group.aks_nsg.id
   }
-
 }
 
 module "aks" {
   source = "./modules/aks"
 
-  name = "${random_pet.random_kubernetes_cluster_name.id}-k8s"
-  location = module.rg.location
-  resource_group_name = module.rg.name
-  kubernetes_version = "1.29.4"
+  name       = "${random_pet.random_kubernetes_cluster_name.id}-k8s"
   dns_prefix = "${random_pet.random_kubernetes_dns_prefix.id}-k8s"
-  subnet_id = tolist(module.vnet.subnet)[0].id
+
+  kubernetes_version = "1.29.4"
+
+  resource_group_name = azurerm_resource_group.aks_rg.name
+  location            = azurerm_resource_group.aks_rg.location
+  subnet_id           = lookup(module.vnet.vnet_subnets_name_id,var.cluster_subnet_name) 
 }
