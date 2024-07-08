@@ -18,9 +18,9 @@ data:
           category: Kubernetes
         annotations:
           summary: High Memory Usage
-          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is using more than 80% of its allocated memory limit."
-          impact: "The pod may be experiencing performance degradation or could be at risk of being terminated by Kubernetes due to memory pressure."
-          action: "Renovar certificación :)"
+          description: "Barto no te hagas el distraído con el Solutions Architect Asociate de AWS"
+          impact: "Si no se rinde la certificación, se resta un 30% del sueldo para el mes que viene. Lo dijo Jorge"
+          action: "Rendir certificación :)"
   prometheus.yml: |-
     global:
       scrape_interval: 5s
@@ -43,21 +43,6 @@ data:
     - job_name: pushgateway
       static_configs:
       - targets: ["pushgateway:9091"]
-
-    - job_name: 'kubernetes-apiservers'
-
-      kubernetes_sd_configs:
-      - role: endpoints
-      scheme: https
-
-      tls_config:
-        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-
-      relabel_configs:
-      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
-        action: keep
-        regex: default;kubernetes;https
 
     - job_name: 'kubernetes-nodes'
 
@@ -160,9 +145,6 @@ data:
         action: replace
         target_label: kubernetes_name
     
-    - job_name: 'kube-state'
-      static_configs:
-        - targets: ['kube-state:8080']
     - job_name: kubernetes-nodes-cadvisor
       scrape_interval: 10s
       scrape_timeout: 10s
