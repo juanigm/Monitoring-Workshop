@@ -63,9 +63,13 @@ resource "azurerm_network_security_rule" "deployment_rules" {
   depends_on = [data.azurerm_public_ip.aks_pip_defult]
 }
 
-resource "null_resource" "checkov" {
+resource "null_resource" "extra_features" {
   provisioner "local-exec" {
     command = "checkov -o cli -o github_failed_only --output-file-path checkov --framework terraform --download-external-modules true --quiet --compact -s -d ."
+  }
+  
+  provisioner "local-exec" {
+    command = "infracost breakdown --path . --format json --out-file infracost.json"
   }
 
   triggers = {
