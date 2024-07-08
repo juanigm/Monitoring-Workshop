@@ -10,7 +10,7 @@ data:
     groups:
     - name: high-pod-memory-usage
       rules:
-      - alert: High Pod Memory
+      - alert: High Memory Usage
         expr: sum(container_memory_usage_bytes) > 1
         for: 1m
         labels:
@@ -20,7 +20,7 @@ data:
           summary: High Memory Usage
           description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is using more than 80% of its allocated memory limit."
           impact: "The pod may be experiencing performance degradation or could be at risk of being terminated by Kubernetes due to memory pressure."
-          action: "Investigate the pod's memory usage pattern, consider adjusting memory requests/limits, and optimize application memory usage."
+          action: "Renovar certificación :)"
   prometheus.yml: |-
     global:
       scrape_interval: 5s
