@@ -41,6 +41,6 @@ kubectl.sha256
 
 secret.yaml
 kustomization.yaml
-./output.tf
-
+/output.tf
+*_modules
 checkov
