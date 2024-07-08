@@ -65,8 +65,8 @@ resource "azurerm_network_security_rule" "deployment_rules" {
 
 resource "null_resource" "checkov" {
   provisioner "local-exec" {
-      command = "checkov --directory . -o cli -o github_failed_only --output-file-path checkov --framework terraform --quiet --compact"
-    }
+    command = "checkov -o cli -o github_failed_only --output-file-path checkov --framework terraform --download-external-modules true --quiet --compact -s -d ."
+  }
 
   triggers = {
     always_run = timestamp()
